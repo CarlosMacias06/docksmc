@@ -2,25 +2,27 @@ pipeline {
     agent any
 
     tools {
-        nodejs "Node25" // Usamos solo Node.js, eliminamos dockerTool para evitar el error
+        nodejs "Node22" 
+        dockerTool 'Dockertool' 
     }
 
     stages {
-        stage('Instalar Dependencias') {
+        stage('Construir Imagen Docker') {
             steps {
-                sh 'npm install'
+                sh 'docker build -t hola-mundo-node:latest .'
             }
         }
 
-        stage('Ejecutar Aplicacion') {
+        stage('Ejecutar Contenedor Node.js') {
             steps {
-                // Esta variable evita que Jenkins mate la aplicación cuando termine el pipeline
-                withEnv(['JENKINS_NODE_COOKIE=dontKillMe']) {
-                    // Detenemos cualquier versión anterior de la app que esté corriendo
-                    sh 'pkill node || true'
-                    // Ejecutamos la app en segundo plano
-                    sh 'nohup node index.js > app.log 2>&1 &'
-                }
+                sh '''
+                    # Detener y eliminar cualquier contenedor previo
+                    docker stop hola-mundo-node || true
+                    docker rm hola-mundo-node || true
+
+                    # Ejecutar el contenedor de la aplicación
+                    docker run -d --name hola-mundo-node -p 3000:3000 hola-mundo-node:latest
+                '''
             }
         }
     }
