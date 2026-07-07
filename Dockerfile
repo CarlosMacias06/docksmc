@@ -7,8 +7,8 @@ WORKDIR /usr/src/app
 COPY package*.json ./
 COPY index.js .
 
-# Instalar dependencias
-RUN npm install
+# Instalar dependencias (forzando una instalación limpia)
+RUN rm -f package-lock.json && npm cache clean --force && npm install
 
 # Exponer el puerto de la aplicación
 EXPOSE 3000
